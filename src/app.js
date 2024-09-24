@@ -5,12 +5,15 @@ app.get("/", (req, res) => {
     res.send("Hello from dashboard");
 });
 
-app.get('/about', (req, res) => {
-    res.send("About page");
+app.get('/user', (req, res) => {
+    res.send({first_name:"vraj jangid", last_name:"jangid"});
 });
 
-app.get("/test", (req, res) => {
-    res.send("Test page");
+app.post("/user", (req, res) => {
+    res.send("Data Added Successfully");
+});
+app.delete("/user", (req, res) => {
+    res.send("Data Deleted Successfully");
 });
 
 app.listen(7000, () => {
