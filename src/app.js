@@ -65,19 +65,41 @@ app.delete("/user",async(req,res)=>{
 
 //update the data 
 //patch and put 
-app.patch("/user",async(req,res)=>{
-    try{
-        const userId=req.body.userId;
-        const data= req.body;
-        const user= await User.findByIdAndUpdate(userId,data,{
-            runValidators:true,
-        });
-        res.send("Data Updated Success");
-    }catch(err){
-        res.status(400).send("something Went Wrond");
 
-    }
-})
+    app.patch("/user", async (req, res) => {
+        try {
+            const userId = req.body.userId;
+            const data = req.body;
+    
+            const isAllowed = ["userId", "firstName", "gender", "lastName", "password", "skill"];
+            const isUpdatedAllowed = Object.keys(data).every((k) => isAllowed.includes(k));
+    
+            if (!isUpdatedAllowed) {
+                return res.status(400).send({ error: "Update not allowed for these fields" });
+            }
+    
+            // Check if skill is provided and if its length is valid
+            if (data?.skill && data.skill.length > 10) {
+                return res.status(400).send({ error: "Skill cannot be more than 10 items" });
+            }
+    
+            const user = await User.findByIdAndUpdate(userId, data, {
+                runValidators: true,
+                new: true // This returns the updated document
+            });
+    
+            // Handle case where no user is found
+            if (!user) {
+                return res.status(404).send({ error: "User not found" });
+            }
+    
+            res.send({ message: "Data updated successfully", user });
+        } catch (err) {
+            // Send a more detailed error message
+            res.status(500).send({ error: "Something went wrong", details: err.message });
+        }
+    });
+    
 
 
 app.get("/feed", async(req, res) => {
