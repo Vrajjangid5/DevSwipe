@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const connectDB=require("./config/database")
+const User = require("./models/user")
+app.use(express.json())
 
 // const {adminAuth,userAuth}=require("./middlewares/auth")
 
@@ -33,6 +35,82 @@ const connectDB=require("./config/database")
 // app.delete("/user", (req, res) => {
 //     res.send("Data Deleted Successfully");
 // });
+
+app.get("/user", async(req, res) => {
+    try{
+        const users= await User.find({email:req.body.email});
+        if(users===0){
+            res.status(404).send("user Not Found");
+        }else{
+            res.send(users);
+        }
+    }catch(err){
+        res.status(400).send("Something Went Wrong");
+    }
+});
+//delete the data
+app.delete("/user",async(req,res)=>{
+    try{
+        const userId=req.body.userId;
+        const users= await User.findByIdAndDelete(userId);
+        if(users===0){
+            res.status(404).send("user Not Found");
+        }else{
+            res.send(" deleted succes");
+        }
+    }catch(err){
+        res.status(400).send("something Went Wrond");
+    }
+})
+
+//update the data 
+//patch and put 
+app.patch("/user",async(req,res)=>{
+    try{
+        const userId=req.body.userId;
+        const data= req.body;
+        const user= await User.findByIdAndUpdate(userId,data);
+        res.send("Data Updated Success");
+    }catch(err){
+        res.status(400).send("something Went Wrond");
+
+    }
+})
+
+
+app.get("/feed", async(req, res) => {
+    try{
+        const users= await User.find({});
+        if(users===0){
+            res.status(404).send("user Not Found");
+        }else{
+            res.send(users);
+        }
+    }catch(err){
+        res.status(400).send("Something Went Wrong");
+    }
+});
+
+
+
+
+app.post("/signup",async(req,res)=>{
+    console.log(req.body);
+    const userData={
+        firstName:"vraj",
+        lastName:"Jangid",
+        email:"vrajjangid5@gmail.com",
+        age:20,
+        gender:"male",
+    }
+    try{
+        const user =new User(req.body);
+        await user.save();
+        res.send("user Added SuccessFully");
+    }catch(err){
+        res.status(400).send("error occure ",err.message);
+    }
+})
 
 connectDB().then(()=>{
     console.log("dataBase Connect Successful")
