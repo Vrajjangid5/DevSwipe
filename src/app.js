@@ -69,7 +69,9 @@ app.patch("/user",async(req,res)=>{
     try{
         const userId=req.body.userId;
         const data= req.body;
-        const user= await User.findByIdAndUpdate(userId,data);
+        const user= await User.findByIdAndUpdate(userId,data,{
+            runValidators:true,
+        });
         res.send("Data Updated Success");
     }catch(err){
         res.status(400).send("something Went Wrond");
@@ -95,20 +97,21 @@ app.get("/feed", async(req, res) => {
 
 
 app.post("/signup",async(req,res)=>{
-    console.log(req.body);
-    const userData={
-        firstName:"vraj",
-        lastName:"Jangid",
-        email:"vrajjangid5@gmail.com",
-        age:20,
-        gender:"male",
-    }
+    // console.log(req.body);
+    // const userData={
+    //     firstName:"vraj",
+    //     lastName:"Jangid",
+    //     email:"vrajjangid5@gmail.com",
+
+    //     age:20,
+    //     gender:"male",
+    // }
     try{
         const user =new User(req.body);
         await user.save();
         res.send("user Added SuccessFully");
     }catch(err){
-        res.status(400).send("error occure ",err.message);
+        res.status(400).send({ message: 'An error occurred' });
     }
 })
 
