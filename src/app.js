@@ -3,6 +3,8 @@ const app = express();
 const connectDB=require("./config/database")
 const User = require("./models/user")
 app.use(express.json())
+const {signUpValidation} = require("./utils/validation")
+const bcrypt = require("bcrypt");
 
 // const {adminAuth,userAuth}=require("./middlewares/auth")
 
@@ -115,7 +117,30 @@ app.get("/feed", async(req, res) => {
     }
 });
 
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            // Send the same error message for both email and password to avoid exposing details
+            return res.status(400).send({ error: "Invalid credentials" });
+        }
+
+        // Compare password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).send({ error: "Invalid credentials" });
+        }
+
+        // If login is successful
+        res.send("Login successful!" );
+    } catch (err) {
+        // Catch any unexpected errors
+        res.status(500).send({ message: "An error occurred", details: err.message });
+    }
+});
 
 
 app.post("/signup",async(req,res)=>{
@@ -129,7 +154,18 @@ app.post("/signup",async(req,res)=>{
     //     gender:"male",
     // }
     try{
-        const user =new User(req.body);
+        const {firstName,lastName,email,password}= req.body;
+
+
+        signUpValidation(req);
+        const passwordHash= await bcrypt.hash(password,10);
+
+        const user =new User({
+            firstName,
+            lastName,
+            email,
+            password:passwordHash,
+        });
         await user.save();
         res.send("user Added SuccessFully");
     }catch(err){
