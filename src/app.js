@@ -5,6 +5,9 @@ const User = require("./models/user")
 app.use(express.json())
 const {signUpValidation} = require("./utils/validation")
 const bcrypt = require("bcrypt");
+const cookieParser= require("cookie-parser");
+const Jwt= require("jsonwebtoken");
+app.use(cookieParser());
 
 // const {adminAuth,userAuth}=require("./middlewares/auth")
 
@@ -117,6 +120,30 @@ app.get("/feed", async(req, res) => {
     }
 });
 
+app.get("/profile",async(req,res)=>{
+    try{const cookies= req.cookies
+        const {token}=cookies
+        if(!token){
+            throw new Error("Plese log in Token Expire");
+        }
+
+        const decodedMsg =await Jwt.verify(token,"@Vrajjangid123#@!");
+        const {_id}= decodedMsg;
+        console.log("logged In User is : "+ _id );
+        const user = await User.findById(_id);
+        if(!user){
+            throw new Error("User is not Present")
+        }
+        
+        
+    // console.log(cookies);
+    res.send(user)}catch(err){
+        res.status(500).send({ error: "Something went wrong", details: err.message });
+
+    }
+})
+
+
 app.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -135,6 +162,8 @@ app.post("/login", async (req, res) => {
         }
 
         // If login is successful
+        const token= await Jwt.sign({_id:user._id},"@Vrajjangid123#@!");
+        res.cookie("token",token);
         res.send("Login successful!" );
     } catch (err) {
         // Catch any unexpected errors
