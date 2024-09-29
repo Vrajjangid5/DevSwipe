@@ -12,7 +12,15 @@ const signUpValidation =(req)=>{
 
     }
 }
-
+const validationEdit = (req) => {
+    const ALLOWED_EDIT = ["firstName", "lastName", "gender", "skill", "about", "photoUrl"];
+    
+    // Ensure all keys in the request body are allowed fields
+    const isAllowed = Object.keys(req.body).every((key) => ALLOWED_EDIT.includes(key));
+    
+    return isAllowed;
+};
 module.exports = {
     signUpValidation,
+    validationEdit,
 };
