@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
+const User= require("../models/user");
 
 const connectionRequestSchema= new mongoose.Schema({
     fromUserId:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required:true,
     },
     toUserId:{
@@ -23,13 +25,13 @@ const connectionRequestSchema= new mongoose.Schema({
 
 connectionRequestSchema.index({fromUserId:1,toUserId:1});
 
-connectionRequestSchema.pre("save",function (){
-    const connectionReq= this;
-    if(connectionReq.fromUserId.equals(connectionReq.toUserId)){
-        throw new Error("Cannot send the req. to yourself");
+connectionRequestSchema.pre("save", function (next) {
+    const connectionReq = this;
+    if (connectionReq.fromUserId.equals(connectionReq.toUserId)) {
+        throw new Error("Cannot send the request to yourself");
     }
-    next();
-})
+    next();  // Call next to continue the middleware chain
+});
 
 const connectionRequestModel =new mongoose.model(
     "connectionRequest",
